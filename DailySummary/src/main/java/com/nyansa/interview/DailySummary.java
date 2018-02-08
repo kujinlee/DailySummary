@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,7 +15,7 @@ import java.util.Scanner;
 import java.util.TreeMap;
 
 public class DailySummary {
-	// Time complexity is O(N*log(N))
+	// Time complexity is O(N*log(N)). N is 
 	static <K, V extends Comparable<? super V>> List<Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
 
 		List<Entry<K, V>> sortedEntries = new ArrayList<Entry<K, V>>(map.entrySet());
@@ -53,8 +54,33 @@ public class DailySummary {
 		try {
 			File file = new File(fileName);
 			Scanner scanner = new Scanner(file);
-			// while loop is O(N)
-			// Map operations are O(1)
+			/*
+			 * Let 
+			 * N : Total number of visit
+			 * L : Number of unique link
+			 * K : number of days
+			 * M : Average visit per link per day = N/(L*K)
+			 * N_i : total number of visit of link i
+			 * then
+			 * N = M*L*K;
+			 * M = N/(L*K) = Sum(N_i)/(L*K) = Sum(N_i/K)/L
+			 * L': Average number of unique link per day = f*L : this is proportional to total number of link L
+			 * f : is proportion factor varies by data set
+			 * 
+			 * 
+			 * 
+			 * Time complexity of first while loop is O(N) = O(M*L*K) ------------------------ (1)
+			 * Time complexity of second for loop is O(K*L'*log(L')) = O(K*f*L*log(f*L)) ----- (2)
+			 * 
+			 * Since K*L is common to (1) and (2), overall time complexity depends on M and f*log(f*L)
+			 * if M is bigger than f*log(f*L) then overall time complexity is O(N) = O(M*L*K)
+			 * if M is smaller than f*log(f*L) then overall time complexity is O(K*f*L*log(f*L)) ~ O(K*L*log(L))
+			 * 
+			 * From description "cardinality of hit count values and the number of days are much smaller than the number of unique URLs",
+			 * it is probable that M is smaller than f*log(f*L) then dominating time complexity is O(N)
+			 */
+			
+			// Time complexity of first while loop is O(N) = O(M*L*K)
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
 				String[] parsedLine = line.split("\\|");
@@ -76,7 +102,7 @@ public class DailySummary {
 					}
 				} else {
 					// first link visit entry for the date, add new linkVisitMap for the date
-					linkVisitMap = new TreeMap<String, Long>();
+					linkVisitMap = new HashMap<String, Long>();
 					linkVisitMap.put(link, 1L);
 					dateLinkMap.put(dateToSort, linkVisitMap);
 				}
@@ -84,8 +110,10 @@ public class DailySummary {
 			scanner.close();
 
 			// print for the given format
-			// for loop is O(K). Collections.sort is O(N*log(N)) ==> overall time complexity is O(K*N*log(N))
-			// K is number of days. N is average number of unique links for a day
+			// for loop is O(K). Collections.sort is O(L'*log(L'))
+			// K is number of days. L' is average number of unique links for a day
+			
+			// Time complexity of second loop is  O(K*f*L*log(f*L)) ~ O(K*L*log(L)
 			String displayDate = null;
 			for (String date : dateLinkMap.keySet()) {
 				displayDate = date.substring(4, 6) + "/" + date.substring(6, 8) + "/" + date.substring(0, 4);
