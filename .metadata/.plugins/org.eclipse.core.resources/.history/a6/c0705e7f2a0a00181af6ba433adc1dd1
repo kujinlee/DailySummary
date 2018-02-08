@@ -1,0 +1,10 @@
+package com.nyansa.interview;
+
+public class DailySummary {
+	
+	
+	public static void main(String[] args) {
+		// read data from 
+	}
+
+}

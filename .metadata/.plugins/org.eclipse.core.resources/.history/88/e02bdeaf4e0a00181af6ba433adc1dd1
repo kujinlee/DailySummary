@@ -1,0 +1,94 @@
+package com.nyansa.interview;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Scanner;
+import java.util.TreeMap;
+
+public class DailySummary {
+	static <K, V extends Comparable<? super V>> List<Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
+
+		List<Entry<K, V>> sortedEntries = new ArrayList<Entry<K, V>>(map.entrySet());
+
+		Collections.sort(sortedEntries, new Comparator<Entry<K, V>>() {
+			@Override
+			public int compare(Entry<K, V> e1, Entry<K, V> e2) {
+				return e2.getValue().compareTo(e1.getValue());
+			}
+		});
+
+		return sortedEntries;
+	}
+
+	public static void main(String[] args) {
+		if (args.length != 1) {
+			System.out.println("Usage: DailySummary <data file path>");
+			return;
+		}
+		String fileName = args[0];
+		String patternSort = "yyyyMMdd";
+		SimpleDateFormat dateSort = new SimpleDateFormat(patternSort);
+		dateSort.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+
+		Map<String, Map<String, Long>> dateLinkMap = new TreeMap<String, Map<String, Long>>();
+		Map<String, Long> linkVisitMap = null; // added for each new date
+
+		DailySummary ds = new DailySummary();
+
+		try {
+			File file = new File(fileName);
+			Scanner scanner = new Scanner(file);
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				String[] parsedLine = line.split("\\|");
+				String timeStampS = parsedLine[0];
+				long timeStamp = Long.parseLong(timeStampS);
+				String link = parsedLine[1];
+
+				Date time = new Date((long) timeStamp * 1000);
+				String dateToSort = dateSort.format(time);
+
+				if (dateLinkMap.containsKey(dateToSort)) {
+					// date alreay in the dateLinkMap
+					linkVisitMap = dateLinkMap.get(dateToSort); // get the linkVisit map for the given date
+					if (linkVisitMap.containsKey(link)) {
+						// link is already in the map, increment visit count
+						linkVisitMap.put(link, linkVisitMap.get(link) + 1);
+					} else {
+						linkVisitMap.put(link, 1L);
+					}
+				} else {
+					// first link visit entry for the date, add new linkVisitMap for the date
+					linkVisitMap = new TreeMap<String, Long>();
+					linkVisitMap.put(link, 1L);
+					dateLinkMap.put(dateToSort, linkVisitMap);
+				}
+			}
+			scanner.close();
+
+			// print for the given format
+			String displayDate = null;
+			for (String date : dateLinkMap.keySet()) {
+				displayDate = date.substring(4, 6) + "/" + date.substring(6, 8) + "/" + date.substring(0, 4);
+				System.out.println(displayDate + " GMT");
+				linkVisitMap = dateLinkMap.get(date);
+				List<Entry<String, Long>> sortedEntries = entriesSortedByValues(linkVisitMap);
+				for (int i=0; i<sortedEntries.size(); i++) {
+					Entry<String, Long> entry = sortedEntries.get(i);
+					System.out.println(entry.getKey() + " " + entry.getValue());
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

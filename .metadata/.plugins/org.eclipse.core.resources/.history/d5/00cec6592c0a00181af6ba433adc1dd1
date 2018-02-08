@@ -1,0 +1,28 @@
+package com.nyansa.interview;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+public class DailySummary {
+
+	public static void main(String[] args) {
+		if (args.length != 1) {
+			System.out.println("Usage: DailySummary <data file path>");
+			return;
+		}
+		String fileName = args[0];
+
+		try {
+			File file = new File(fileName);
+			Scanner scanner = new Scanner(file);
+			while (scanner.hasNextLine()) {
+				System.out.println(scanner.nextLine());
+			}
+			scanner.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+}
