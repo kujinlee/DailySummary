@@ -30,12 +30,7 @@ public class DailySummary {
 		return sortedEntries;
 	}
 
-	/*
-	 * Overall time complexity is O(K*M*log(M))
-	 * K : number of unique days
-	 * M : average number of unique links visited in a day
-	 *
-	 */
+	
 	public static void main(String[] args) {
 		if (args.length != 1) {
 			System.out.println("Usage: DailySummary <data file path>");
